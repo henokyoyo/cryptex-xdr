@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRYPTEX XDR - Zero-Knowledge Vault</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/static/client-crypto.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Inter',sans-serif;background:#000a06;color:#fff}
+        .glass{background:rgba(0,20,10,0.6);backdrop-filter:blur(20px);border:1px solid rgba(16,185,129,0.15)}
+        .drop-zone{border:2px dashed rgba(16,185,129,0.3);transition:all 0.3s}
+        .drop-zone:hover{border-color:#10b981;background:rgba(16,185,129,0.03)}
+        .badge{background:rgba(16,185,129,0.15);color:#10b981;padding:4px 10px;border-radius:20px;font-size:10px;font-weight:600}
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+    <div class="max-w-5xl mx-auto">
+        <!-- Header -->
+        <div class="flex flex-wrap justify-between items-center mb-8 pb-4 border-b border-emerald-900/50">
+            <div>
+                <h1 class="text-3xl md:text-4xl font-black text-emerald-400">🔐 CRYPTEX XDR</h1>
+                <p class="text-emerald-700 text-sm flex items-center gap-2">
+                    Zero-Knowledge Secure Vault
+                    <span class="badge">CLIENT-SIDE ENCRYPTION</span>
+                </p>
+            </div>
+            <div class="flex gap-3 text-sm">
+                <span id="status" class="text-emerald-500">● SECURE</span>
+            </div>
+        </div>
+
+        <!-- Stats Bar -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+            <div class="glass rounded-xl p-4 text-center"><div class="text-2xl font-black text-emerald-400" id="stat-enc">0</div><div class="text-emerald-700 text-xs">Files Encrypted</div></div>
+            <div class="glass rounded-xl p-4 text-center"><div class="text-2xl font-black text-emerald-400" id="stat-dec">0</div><div class="text-emerald-700 text-xs">Files Decrypted</div></div>
+            <div class="glass rounded-xl p-4 text-center"><div class="text-2xl font-black text-emerald-400" id="stat-bytes">0 MB</div><div class="text-emerald-700 text-xs">Data Protected</div></div>
+            <div class="glass rounded-xl p-4 text-center"><div class="text-2xl font-black text-green-400" id="stat-uptime">00:00</div><div class="text-emerald-700 text-xs">Session Uptime</div></div>
+        </div>
+
+        <!-- Main Vault Card -->
+        <div class="glass rounded-2xl p-6 md:p-8 mb-6">
+            <div class="drop-zone rounded-xl p-8 md:p-12 text-center mb-6" id="drop-zone">
+                <div class="text-5xl mb-4">📁</div>
+                <p class="text-emerald-300 font-semibold mb-2">Drop files here or click to browse</p>
+                <p class="text-emerald-700 text-xs">Encryption happens in your browser • Password never sent to server</p>
+                <input type="file" id="file-input" class="hidden" multiple>
+                <div id="file-list" class="mt-4 text-sm text-emerald-500"></div>
+            </div>
+
+            <div class="mb-4">
+                <label class="text-emerald-400 text-sm font-semibold uppercase tracking-wider">🔑 Encryption Password</label>
+                <input type="password" id="password" class="w-full bg-emerald-950/30 border border-emerald-800 text-emerald-300 rounded-lg p-3 focus:outline-none focus:border-emerald-500" placeholder="Enter password (never sent to server)">
+                <div id="pw-strength" class="mt-2 text-xs"></div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="encryptFile()" id="btn-enc" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl transition-all disabled:opacity-30">🔒 ENCRYPT (Client-Side)</button>
+                <button onclick="decryptFile()" id="btn-dec" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition-all disabled:opacity-30">🔓 DECRYPT</button>
+            </div>
+        </div>
+
+        <!-- Activity Log -->
+        <div class="glass rounded-2xl p-6">
+            <h2 class="text-emerald-400 font-semibold uppercase tracking-wider text-sm mb-4">📋 Activity Log</h2>
+            <div id="activity-log" class="text-xs font-mono text-emerald-600 max-h-48 overflow-y-auto space-y-1"></div>
+        </div>
+    </div>
+
+    <script>
+        let selectedFiles = [];
+        let stats = { enc: 0, dec: 0, bytes: 0 };
+        const log = [];
+
+        function addLog(msg) {
+            log.push(`[${new Date().toLocaleTimeString()}] ${msg}`);
+            document.getElementById('activity-log').innerHTML = log.slice(-20).reverse().map(l => `<div>${l}</div>`).join('');
+        }
+
+        const dz = document.getElementById('drop-zone');
+        const fi = document.getElementById('file-input');
+        dz.addEventListener('click', () => fi.click());
+        dz.addEventListener('dragover', e => { e.preventDefault(); dz.style.borderColor = '#10b981'; });
+        dz.addEventListener('dragleave', () => dz.style.borderColor = '');  
+        dz.addEventListener('drop', e => {
+            e.preventDefault(); dz.style.borderColor = '';
+            selectedFiles = Array.from(e.dataTransfer.files);
+            updateFileList();
+        });
+        fi.addEventListener('change', () => { selectedFiles = Array.from(fi.files); updateFileList(); });
+
+        function updateFileList() {
+            document.getElementById('file-list').innerHTML = selectedFiles.map(f => 
+                `<div>📄 ${f.name} (${(f.size/1024).toFixed(1)} KB)</div>`
+            ).join('');
+        }
+
+        document.getElementById('password').addEventListener('input', function() {
+            const pw = this.value;
+            let score = 0, fb = [];
+            if (pw.length >= 8) score += 20; else fb.push('8+ chars');
+            if (/[A-Z]/.test(pw)) score += 20; else fb.push('uppercase');
+            if (/[a-z]/.test(pw)) score += 20; else fb.push('lowercase');
+            if (/\d/.test(pw)) score += 20; else fb.push('number');
+            if (/[^A-Za-z0-9]/.test(pw)) score += 20; else fb.push('symbol');
+            const lvl = score >= 80 ? 'Strong' : score >= 40 ? 'Medium' : 'Weak';
+            const col = score >= 80 ? 'text-emerald-400' : score >= 40 ? 'text-yellow-400' : 'text-red-400';
+            document.getElementById('pw-strength').innerHTML = 
+                `<span class="${col}">${lvl}: ${'█'.repeat(score/20)}${'░'.repeat(5-score/20)}</span> ${fb.length ? '· ' + fb.join(', ') : ''}`;
+        });
+
+        async function encryptFile() {
+            if (!selectedFiles.length) return alert('Select a file!');
+            const pw = document.getElementById('password').value;
+            if (!pw) return alert('Enter password!');
+            if (pw.length < 8) return alert('Password too weak!');
+            
+            const btn = document.getElementById('btn-enc');
+            btn.disabled = true; btn.textContent = '⏳ ENCRYPTING IN BROWSER...';
+            
+            try {
+                const file = selectedFiles[0];
+                addLog(`🔒 Encrypting: ${file.name} (Client-Side Web Crypto API)`);
+                const result = await CryptexClient.encryptFile(file, pw);
+                
+                const url = URL.createObjectURL(result.blob);
+                const a = document.createElement('a');
+                a.href = url; a.download = result.filename; a.click();
+                URL.revokeObjectURL(url);
+                
+                stats.enc++; stats.bytes += file.size;
+                updateStats();
+                document.getElementById('status').innerHTML = '✅ ENCRYPTED (Zero-Knowledge)';
+                addLog(`✅ Encrypted: ${result.filename} (${(file.size/1024).toFixed(1)} KB) · Password never left browser`);
+            } catch(e) {
+                addLog(`❌ Error: ${e.message}`);
+                document.getElementById('status').innerHTML = '❌ FAILED';
+            }
+            btn.disabled = false; btn.textContent = '🔒 ENCRYPT (Client-Side)';
+        }
+
+        async function decryptFile() {
+            if (!selectedFiles.length) return alert('Select a .cryptex file!');
+            const pw = document.getElementById('password').value;
+            if (!pw) return alert('Enter password!');
+            
+            const btn = document.getElementById('btn-dec');
+            btn.disabled = true; btn.textContent = '⏳ DECRYPTING IN BROWSER...';
+            
+            try {
+                const file = selectedFiles[0];
+                addLog(`🔓 Decrypting: ${file.name}`);
+                const result = await CryptexClient.decryptFile(file, pw);
+                
+                const url = URL.createObjectURL(result.blob);
+                const a = document.createElement('a');
+                a.href = url; a.download = result.filename; a.click();
+                URL.revokeObjectURL(url);
+                
+                stats.dec++;
+                updateStats();
+                document.getElementById('status').innerHTML = '✅ DECRYPTED';
+                addLog(`✅ Decrypted: ${result.filename} · Verified: ${result.metadata.name}`);
+            } catch(e) {
+                addLog(`❌ ${e.message}`);
+                document.getElementById('status').innerHTML = '❌ WRONG PASSWORD';
+            }
+            btn.disabled = false; btn.textContent = '🔓 DECRYPT';
+        }
+
+        function updateStats() {
+            document.getElementById('stat-enc').textContent = stats.enc;
+            document.getElementById('stat-dec').textContent = stats.dec;
+            document.getElementById('stat-bytes').textContent = (stats.bytes/1024/1024).toFixed(1) + ' MB';
+        }
+
+        setInterval(() => {
+            const m = Math.floor((Date.now() - performance.timeOrigin) / 60000);
+            const s = Math.floor(((Date.now() - performance.timeOrigin) % 60000) / 1000);
+            document.getElementById('stat-uptime').textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+        }, 1000);
+    </script>
+</body>
+</html>

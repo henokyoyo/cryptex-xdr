@@ -1,0 +1,131 @@
+[
+  {
+    "timestamp": "2026-05-15T20:06:11.570846",
+    "event": "ENCRYPT",
+    "details": {
+      "file": "Esophageal Disorders Rome V.pdf",
+      "size": 855539
+    }
+  },
+  {
+    "timestamp": "2026-05-15T20:07:59.853660",
+    "event": "ENCRYPT",
+    "details": {
+      "file": "Esophageal Disorders Rome V.pdf",
+      "size": 855539
+    }
+  },
+  {
+    "timestamp": "2026-05-15T20:10:21.128134",
+    "event": "DECRYPT",
+    "details": {
+      "file": "Esophageal Disorders Rome V.pdf.cryptex",
+      "result": "success"
+    }
+  },
+  {
+    "timestamp": "2026-05-15T20:11:10.652549",
+    "event": "DECRYPT_FAILED",
+    "details": {
+      "error": "INTEGRITY CHECK FAILED"
+    }
+  },
+  {
+    "timestamp": "2026-05-15T20:11:19.311517",
+    "event": "DECRYPT",
+    "details": {
+      "file": "Esophageal Disorders Rome V.pdf.cryptex",
+      "result": "success"
+    }
+  },
+  {
+    "timestamp": "2026-05-15T20:17:05.276269",
+    "event": "ENCRYPT",
+    "details": {
+      "file": "Esophageal Disorders Rome V (1).pdf",
+      "size": 855539
+    }
+  },
+  {
+    "timestamp": "2026-05-15T20:19:21.730968",
+    "event": "DECRYPT_FAILED",
+    "details": {
+      "error": "INTEGRITY CHECK FAILED"
+    }
+  },
+  {
+    "timestamp": "2026-05-15T20:19:33.646122",
+    "event": "DECRYPT",
+    "details": {
+      "file": "Esophageal Disorders Rome V (1).pdf.cryptex",
+      "result": "success"
+    }
+  },
+  {
+    "timestamp": "2026-05-15T20:21:59.336664",
+    "event": "SHRED",
+    "details": {
+      "file": "test_shred.txt"
+    }
+  },
+  {
+    "timestamp": "2026-05-15T20:23:44.289937",
+    "event": "SHRED",
+    "details": {
+      "file": "test_shred.txt"
+    }
+  },
+  {
+    "timestamp": "2026-05-15T20:35:54.984327",
+    "event": "ENCRYPT",
+    "details": {
+      "file": "Amyotrophic Lateral Sclerosis - JAMA (2026).pdf",
+      "size": 1038183
+    }
+  },
+  {
+    "timestamp": "2026-05-15T20:36:33.110277",
+    "event": "DECRYPT_FAILED",
+    "details": {
+      "error": "INTEGRITY CHECK FAILED"
+    }
+  },
+  {
+    "timestamp": "2026-05-15T20:36:45.937861",
+    "event": "DECRYPT_FAILED",
+    "details": {
+      "error": "INTEGRITY CHECK FAILED"
+    }
+  },
+  {
+    "timestamp": "2026-05-15T20:40:51.100019",
+    "event": "ENCRYPT",
+    "details": {
+      "file": "Esophageal Disorders Rome V (1).pdf.cryptex",
+      "size": 855930
+    }
+  },
+  {
+    "timestamp": "2026-05-15T20:41:54.030263",
+    "event": "ENCRYPT",
+    "details": {
+      "file": "Esophageal Disorders Rome V (1).pdf.cryptex",
+      "size": 855930
+    }
+  },
+  {
+    "timestamp": "2026-05-15T20:43:03.686314",
+    "event": "ENCRYPT",
+    "details": {
+      "file": "Esophageal Disorders Rome V (1).pdf.cryptex",
+      "size": 855930
+    }
+  },
+  {
+    "timestamp": "2026-05-15T20:43:30.295986",
+    "event": "DECRYPT_FAILED",
+    "details": {
+      "error": "INTEGRITY CHECK FAILED"
+    }
+  }
+]
